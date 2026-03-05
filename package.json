@@ -1,0 +1,32 @@
+{
+  "name": "valle-software-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "Front_Valle/apps/*",
+    "Front_Valle/packages/*",
+    "Back_Valle/gateway",
+    "Back_Valle/services/*",
+    "Back_Valle/shared/*"
+  ],
+  "scripts": {
+    "db:up": "docker compose -f Back_Valle/infra/docker-compose.yml up -d",
+    "db:down": "docker compose -f Back_Valle/infra/docker-compose.yml down",
+    "prisma:generate": "npm run prisma:generate -w auth-service && npm run prisma:generate -w users-service && npm run prisma:generate -w cms-service",
+    "prisma:migrate": "npm run prisma:migrate -w auth-service -- --name init_auth && npm run prisma:migrate -w users-service -- --name init_users && npm run prisma:migrate -w cms-service -- --name init_cms",
+    "prisma:seed": "npm run prisma:seed -w auth-service && npm run prisma:seed -w users-service && npm run prisma:seed -w cms-service",
+    "setup:db": "npm run prisma:generate && npm run prisma:migrate && npm run prisma:seed",
+    "dev:web-public": "npm run dev --workspace web-public",
+    "dev:web-platform": "npm run dev --workspace web-platform",
+    "dev:gateway": "npm run dev --workspace gateway",
+    "dev:auth": "npm run dev --workspace auth-service",
+    "dev:users": "npm run dev --workspace users-service",
+    "dev:cms": "npm run dev --workspace cms-service",
+    "dev:core": "concurrently -k -n auth,users,cms,gateway,public,platform \"npm run dev:auth\" \"npm run dev:users\" \"npm run dev:cms\" \"npm run dev:gateway\" \"npm run dev:web-public\" \"npm run dev:web-platform\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "enhanced-resolve": "^5.18.3",
+    "lightningcss-win32-x64-msvc": "^1.31.1"
+  }
+}

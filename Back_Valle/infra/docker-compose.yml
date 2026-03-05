@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: valle_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: valle_user
+      POSTGRES_PASSWORD: valle_pass
+      POSTGRES_DB: valle_db
+    ports:
+      - "55432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d
+
+  redis:
+    image: redis:7-alpine
+    container_name: valle_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  nats:
+    image: nats:2.10-alpine
+    container_name: valle_nats
+    restart: unless-stopped
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+
+volumes:
+  postgres_data:

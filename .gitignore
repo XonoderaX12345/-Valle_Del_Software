@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.env
+.DS_Store
+coverage/
+npm-debug.log*
+
+Front_Valle/apps/*/.vite-cache/
+Back_Valle/services/*/src/generated/
+Back_Valle/services/*/prisma/seed.js
+
+Front_Valle/apps/*/dist/
+Back_Valle/**/dist/

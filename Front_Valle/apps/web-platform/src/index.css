@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --platform-bg: #f2f5ff;
+  --platform-text: #0b1b4d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  font-family: "Segoe UI", sans-serif;
+  background: var(--platform-bg);
+  color: var(--platform-text);
+}

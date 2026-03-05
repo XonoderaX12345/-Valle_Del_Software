@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["cms"]
+}
+
+model HomeHero {
+  id          String   @id @default(uuid())
+  title       String
+  highlighted String
+  subtitle    String
+  primaryCta  String
+  primaryHref String
+  secondaryCta String
+  secondaryHref String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@schema("cms")
+}
+
+model HomeKpi {
+  id       String @id @default(uuid())
+  label    String
+  value    String
+  suffix   String?
+  order    Int
+
+  @@unique([label])
+  @@schema("cms")
+}
+
+model HomeCapability {
+  id          String @id @default(uuid())
+  title       String
+  description String
+  icon        String
+  order       Int
+
+  @@schema("cms")
+}
+
+model HomeFocus {
+  id    String @id @default(uuid())
+  text  String
+  order Int
+
+  @@schema("cms")
+}
+
+model HomeAudience {
+  id          String @id @default(uuid())
+  title       String
+  description String
+  order       Int
+
+  @@schema("cms")
+}
+
+model HomeTimeline {
+  id       String @id @default(uuid())
+  stage    String
+  detail   String
+  order    Int
+
+  @@schema("cms")
+}
+
+model HomeSpotlight {
+  id          String @id @default(uuid())
+  title       String
+  description String
+  tag         String
+  order       Int
+
+  @@schema("cms")
+}
+
+model HomeNews {
+  id       String @id @default(uuid())
+  title    String
+  excerpt  String
+  dateText String
+  order    Int
+
+  @@schema("cms")
+}
