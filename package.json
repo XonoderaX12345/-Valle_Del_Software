@@ -12,9 +12,9 @@
   "scripts": {
     "db:up": "docker compose -f Back_Valle/infra/docker-compose.yml up -d",
     "db:down": "docker compose -f Back_Valle/infra/docker-compose.yml down",
-    "prisma:generate": "npm run prisma:generate -w auth-service && npm run prisma:generate -w users-service && npm run prisma:generate -w cms-service",
-    "prisma:migrate": "npm run prisma:migrate -w auth-service -- --name init_auth && npm run prisma:migrate -w users-service -- --name init_users && npm run prisma:migrate -w cms-service -- --name init_cms",
-    "prisma:seed": "npm run prisma:seed -w auth-service && npm run prisma:seed -w users-service && npm run prisma:seed -w cms-service",
+    "prisma:generate": "npm run prisma:generate -w auth-service && npm run prisma:generate -w users-service && npm run prisma:generate -w cms-service && npm run prisma:generate -w convocatoria-service && npm run prisma:generate -w cohort-service && npm run prisma:generate -w activity-service && npm run prisma:generate -w evidence-service && npm run prisma:generate -w certificate-service && npm run prisma:generate -w seedbed-service && npm run prisma:generate -w pmo-service && npm run prisma:generate -w report-service",
+    "prisma:migrate": "npm run prisma:migrate -w auth-service -- --name init_auth && npm run prisma:migrate -w users-service -- --name init_users && npm run prisma:migrate -w cms-service -- --name init_cms && npm run prisma:migrate -w convocatoria-service -- --name init_convocatoria && npm run prisma:migrate -w cohort-service -- --name init_cohort && npm run prisma:migrate -w activity-service -- --name init_activity && npm run prisma:migrate -w evidence-service -- --name init_evidence && npm run prisma:migrate -w certificate-service -- --name init_certificate && npm run prisma:migrate -w seedbed-service -- --name init_seedbed && npm run prisma:migrate -w pmo-service -- --name init_pmo && npm run prisma:migrate -w report-service -- --name init_report",
+    "prisma:seed": "npm run prisma:seed -w auth-service && npm run prisma:seed -w users-service && npm run prisma:seed -w cms-service && npm run prisma:seed -w convocatoria-service && npm run prisma:seed -w cohort-service && npm run prisma:seed -w activity-service && npm run prisma:seed -w evidence-service && npm run prisma:seed -w certificate-service && npm run prisma:seed -w seedbed-service && npm run prisma:seed -w pmo-service && npm run prisma:seed -w report-service",
     "setup:db": "npm run prisma:generate && npm run prisma:migrate && npm run prisma:seed",
     "dev:web-public": "npm run dev --workspace web-public",
     "dev:web-platform": "npm run dev --workspace web-platform",
@@ -22,7 +22,15 @@
     "dev:auth": "npm run dev --workspace auth-service",
     "dev:users": "npm run dev --workspace users-service",
     "dev:cms": "npm run dev --workspace cms-service",
-    "dev:core": "concurrently -k -n auth,users,cms,gateway,public,platform \"npm run dev:auth\" \"npm run dev:users\" \"npm run dev:cms\" \"npm run dev:gateway\" \"npm run dev:web-public\" \"npm run dev:web-platform\""
+    "dev:convocatoria": "npm run dev --workspace convocatoria-service",
+    "dev:cohort": "npm run dev --workspace cohort-service",
+    "dev:activity": "npm run dev --workspace activity-service",
+    "dev:evidence": "npm run dev --workspace evidence-service",
+    "dev:certificate": "npm run dev --workspace certificate-service",
+    "dev:seedbed": "npm run dev --workspace seedbed-service",
+    "dev:pmo": "npm run dev --workspace pmo-service",
+    "dev:report": "npm run dev --workspace report-service",
+    "dev:core": "concurrently -k -n auth,users,cms,convocatoria,cohort,activity,evidence,certificate,seedbed,pmo,report,gateway,public,platform \"npm run dev:auth\" \"npm run dev:users\" \"npm run dev:cms\" \"npm run dev:convocatoria\" \"npm run dev:cohort\" \"npm run dev:activity\" \"npm run dev:evidence\" \"npm run dev:certificate\" \"npm run dev:seedbed\" \"npm run dev:pmo\" \"npm run dev:report\" \"npm run dev:gateway\" \"npm run dev:web-public\" \"npm run dev:web-platform\""
   },
   "devDependencies": {
     "concurrently": "^9.2.1",

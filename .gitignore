@@ -4,6 +4,7 @@ dist/
 .DS_Store
 coverage/
 npm-debug.log*
+.opencode-dev.log
 
 Front_Valle/apps/*/.vite-cache/
 Back_Valle/services/*/src/generated/

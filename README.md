@@ -113,6 +113,15 @@ users.Permission
 - Gateway enruta a:
   - `/api/auth/*` -> `auth-service`
   - `/api/users/*` -> `users-service`
+  - `/api/cms/*` -> `cms-service`
+  - `/api/convocatoria/*` -> `convocatoria-service`
+  - `/api/cohort/*` -> `cohort-service`
+  - `/api/activity/*` -> `activity-service`
+  - `/api/evidence/*` -> `evidence-service`
+  - `/api/certificate/*` -> `certificate-service`
+  - `/api/seedbed/*` -> `seedbed-service`
+  - `/api/pmo/*` -> `pmo-service`
+  - `/api/report/*` -> `report-service`
 
 ## Arranque local
 
@@ -128,6 +137,14 @@ docker compose -f Back_Valle/infra/docker-compose.yml up -d
 - `Back_Valle/services/auth-service/.env.example`
 - `Back_Valle/services/users-service/.env.example`
 - `Back_Valle/services/cms-service/.env.example`
+- `Back_Valle/services/convocatoria-service/.env.example`
+- `Back_Valle/services/cohort-service/.env.example`
+- `Back_Valle/services/activity-service/.env.example`
+- `Back_Valle/services/evidence-service/.env.example`
+- `Back_Valle/services/certificate-service/.env.example`
+- `Back_Valle/services/seedbed-service/.env.example`
+- `Back_Valle/services/pmo-service/.env.example`
+- `Back_Valle/services/report-service/.env.example`
 - `Front_Valle/apps/web-public/.env.example`
 - `Front_Valle/apps/web-platform/.env.example`
 

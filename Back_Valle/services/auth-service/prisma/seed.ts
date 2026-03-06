@@ -5,7 +5,6 @@ const prisma = new PrismaClient();
 
 async function main() {
   const roleKeys = [
-    ["admin", "Administrador"],
     ["coordinador", "Coordinador"],
     ["mentor", "Mentor"],
     ["estudiante", "Estudiante"],
@@ -20,19 +19,28 @@ async function main() {
     });
   }
 
-  const adminRole = await prisma.role.findUniqueOrThrow({
-    where: { key: "admin" }
+  const coordinatorRole = await prisma.role.findUniqueOrThrow({
+    where: { key: "coordinador" }
   });
 
-  const passwordHash = await bcrypt.hash("ValleAdmin2026*", 10);
+  const coordinatorEmail = process.env.COORDINATOR_EMAIL ?? "sebastianriascos892@gmail.com";
+  const coordinatorPassword = process.env.COORDINATOR_PASSWORD ?? "ValleCoordinador2026*";
+  const passwordHash = await bcrypt.hash(coordinatorPassword, 10);
+
+  await prisma.userAuth.deleteMany({
+    where: {
+      role: { key: "coordinador" },
+      email: { not: coordinatorEmail }
+    }
+  });
 
   await prisma.userAuth.upsert({
-    where: { email: "admin@valle.local" },
-    update: { passwordHash, roleId: adminRole.id, isActive: true },
+    where: { email: coordinatorEmail },
+    update: { passwordHash, roleId: coordinatorRole.id, isActive: true },
     create: {
-      email: "admin@valle.local",
+      email: coordinatorEmail,
       passwordHash,
-      roleId: adminRole.id,
+      roleId: coordinatorRole.id,
       isActive: true
     }
   });

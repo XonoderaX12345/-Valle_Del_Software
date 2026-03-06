@@ -1,13 +1,62 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import jwt from "jsonwebtoken";
 import { PrismaClient } from "./generated/prisma/index.js";
+import { z } from "zod";
 
 dotenv.config();
 
 const prisma = new PrismaClient();
 const app = express();
 const port = Number(process.env.PORT ?? 4103);
+const jwtSecret = process.env.JWT_SECRET;
+
+if (!jwtSecret) {
+  throw new Error("JWT_SECRET is required");
+}
+
+const jwtSecretValue: string = jwtSecret;
+
+const createNewsSchema = z.object({
+  title: z.string().min(3),
+  excerpt: z.string().min(10),
+  dateText: z.string().min(3),
+  order: z.number().int().positive()
+});
+
+type JwtPayload = {
+  sub: string;
+  email: string;
+  role: string;
+};
+
+type AuthenticatedRequest = express.Request & {
+  auth?: JwtPayload;
+};
+
+function requireAuth(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
+  const authHeader = req.header("authorization");
+
+  if (!authHeader?.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Missing token" });
+  }
+
+  try {
+    req.auth = jwt.verify(authHeader.slice(7), jwtSecretValue) as unknown as JwtPayload;
+    next();
+  } catch {
+    return res.status(401).json({ error: "Invalid token" });
+  }
+}
+
+function requireCoordinator(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
+  if (req.auth?.role !== "coordinador") {
+    return res.status(403).json({ error: "Coordinator role required" });
+  }
+
+  next();
+}
 
 app.use(cors());
 app.use(express.json());
@@ -39,6 +88,22 @@ app.get("/home", async (_req, res) => {
     spotlight,
     news
   });
+});
+
+app.get("/news", async (_req, res) => {
+  const news = await prisma.homeNews.findMany({ orderBy: { order: "asc" } });
+  res.json(news);
+});
+
+app.post("/news", requireAuth, requireCoordinator, async (req, res) => {
+  const parsed = createNewsSchema.safeParse(req.body);
+
+  if (!parsed.success) {
+    return res.status(400).json({ error: "Invalid payload" });
+  }
+
+  const news = await prisma.homeNews.create({ data: parsed.data });
+  return res.status(201).json(news);
 });
 
 app.listen(port, () => {
