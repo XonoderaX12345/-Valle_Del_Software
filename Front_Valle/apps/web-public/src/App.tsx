@@ -1,15 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 
 type Hero = {
-  title: string
-  highlighted: string
   subtitle: string
-  primaryCta: string
-  primaryHref: string
-  secondaryCta: string
-  secondaryHref: string
 }
 
 type Card = {
@@ -22,9 +16,6 @@ type Card = {
   description?: string
   excerpt?: string
   dateText?: string
-  tag?: string
-  detail?: string
-  stage?: string
 }
 
 type HomePayload = {
@@ -33,7 +24,6 @@ type HomePayload = {
   capabilities: Card[]
   focusAreas: Card[]
   audiences: Card[]
-  timeline: Card[]
   spotlight: Card[]
   news: Card[]
 }
@@ -53,40 +43,16 @@ const emptyPayload: HomePayload = {
   capabilities: [],
   focusAreas: [],
   audiences: [],
-  timeline: [],
   spotlight: [],
   news: []
 }
 
-function HomePage() {
+function useHomeData() {
   const [status, setStatus] = useState('Conectando con plataforma...')
   const [home, setHome] = useState<HomePayload>(emptyPayload)
   const [isLoading, setIsLoading] = useState(true)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [showIntro, setShowIntro] = useState(true)
-
-  const location = useLocation()
 
   const apiUrl = useMemo(() => import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4300', [])
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setShowIntro(false)
-    }, 4000)
-    return () => window.clearTimeout(timer)
-  }, [])
-
-  useEffect(() => {
-    if (!location.hash || showIntro) {
-      return
-    }
-
-    const sectionId = location.hash.slice(1)
-
-    setTimeout(() => {
-      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 20)
-  }, [location.hash, showIntro])
 
   useEffect(() => {
     Promise.all([fetch(`${apiUrl}/health`), fetch(`${apiUrl}/api/cms/home`)])
@@ -97,7 +63,6 @@ function HomePage() {
 
         const healthPayload = await healthRes.json()
         const homePayload = (await homeRes.json()) as HomePayload
-
         setStatus(`Gateway ${healthPayload.status} | CMS conectado`)
         setHome(homePayload)
       })
@@ -109,20 +74,35 @@ function HomePage() {
       })
   }, [apiUrl])
 
+  return { home, status, isLoading }
+}
+
+function PublicLayout() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isValleOpen, setIsValleOpen] = useState(false)
+  const location = useLocation()
+
+  useEffect(() => {
+    setIsSidebarOpen(false)
+    if (location.pathname.startsWith('/valle-del-software')) {
+      setIsValleOpen(true)
+    }
+  }, [location.pathname])
+
   return (
-    <main className="portal-shell">
+    <main className="spa-shell">
       <div className="ambient-grid" />
 
       {!isSidebarOpen ? <button className="sidebar-toggle-fab" onClick={() => setIsSidebarOpen(true)} type="button">Menu</button> : null}
 
       <header className="portal-header">
         <Link className="header-login" to="/login">Ingresar</Link>
-        <Link className="header-apply" to="/#cta">Aplicar</Link>
+        <Link className="header-apply" to="/convocatorias">Aplicar</Link>
       </header>
 
       <aside className={`portal-sidebar ${isSidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-top-row">
-          <Link className="brand-mark" onClick={() => setIsSidebarOpen(false)} to="/">
+          <Link className="brand-mark" to="/">
             <span className="brand-overline">Unidad academica</span>
             <span className="brand-title">VALLE DEL SOFTWARE</span>
           </Link>
@@ -130,163 +110,168 @@ function HomePage() {
         </div>
 
         <nav className="sidebar-nav">
-          <Link className="sidebar-link" onClick={() => setIsSidebarOpen(false)} to="/#inicio">Inicio</Link>
-          <Link className="sidebar-link" onClick={() => setIsSidebarOpen(false)} to="/#enfoque">El Valle</Link>
-          <Link className="sidebar-link" onClick={() => setIsSidebarOpen(false)} to="/#cta">Convocatorias</Link>
-          <Link className="sidebar-link" onClick={() => setIsSidebarOpen(false)} to="/#formacion">Formacion</Link>
-          <Link className="sidebar-link" onClick={() => setIsSidebarOpen(false)} to="/#semilleros">Semilleros</Link>
-          <Link className="sidebar-link" onClick={() => setIsSidebarOpen(false)} to="/#noticias">Noticias</Link>
+          <NavLink className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} to="/">Inicio</NavLink>
+          <div className="sidebar-item-with-submenu">
+            <button className="sidebar-link sidebar-parent" onClick={() => setIsValleOpen((prev) => !prev)} type="button">
+              Valle del software
+            </button>
+            <div className={`sidebar-submenu ${isValleOpen ? 'open' : ''}`}>
+              <NavLink className={({ isActive }) => `sidebar-sublink ${isActive ? 'active' : ''}`} to="/valle-del-software/quienes-somos">Quienes somos</NavLink>
+              <NavLink className={({ isActive }) => `sidebar-sublink ${isActive ? 'active' : ''}`} to="/valle-del-software/software">Valle del software</NavLink>
+              <NavLink className={({ isActive }) => `sidebar-sublink ${isActive ? 'active' : ''}`} to="/valle-del-software/innovacion">Innovacion</NavLink>
+              <NavLink className={({ isActive }) => `sidebar-sublink ${isActive ? 'active' : ''}`} to="/valle-del-software/robotica">Robotica</NavLink>
+            </div>
+          </div>
+          <NavLink className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} to="/convocatorias">Convocatorias</NavLink>
+          <NavLink className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} to="/semilleros">Semilleros</NavLink>
+          <NavLink className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} to="/noticias">Noticias</NavLink>
         </nav>
-
       </aside>
 
       {isSidebarOpen ? <button className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)} type="button" /> : null}
 
-      <div className="portal-content">
-
-      <section className={`mx-auto max-w-7xl px-6 pb-12 pt-12 md:px-10 md:pt-16 ${showIntro ? 'intro-screen' : ''}`} id="inicio">
-        <div className={`hero-shell reveal-up ${showIntro ? 'intro-only' : ''}`}>
-          <p className="chip">Portal universitario de innovacion</p>
-          <h1 className="hero-title">
-            <span>Construimos el futuro de la</span>
-            <span className="hero-highlight">tecnologia universitaria</span>
-          </h1>
-
-          {!showIntro ? (
-            <>
-              <p className="hero-subtitle">{home.hero?.subtitle ?? 'Un ecosistema academico de innovacion que integra formacion en software, investigacion en inteligencia artificial y robotica aplicada para impulsar el talento tecnologico del futuro.'}</p>
-              <div className="hero-actions">
-                <Link className="apply-button" to="/#cta">Aplicar al Valle</Link>
-                <Link className="cta-secondary" to="/#semilleros">Ver proyectos</Link>
-              </div>
-              <p className="hero-status">{status}</p>
-            </>
-          ) : null}
-        </div>
-      </section>
-
-      {!showIntro ? (
-        <>
-
-      <section className="mx-auto max-w-7xl px-6 pb-14 md:px-10">
-        <div className="grid gap-4 md:grid-cols-4">
-          {home.kpis.map((kpi, index) => (
-            <article className="kpi-card reveal-up" key={kpi.id} style={{ animationDelay: `${index * 120}ms` }}>
-              <p className="text-xs uppercase tracking-widest text-cyan-200/70">{kpi.label}</p>
-              <p className="mt-2 text-4xl font-black text-white">{kpi.value}{kpi.suffix ?? ''}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto grid max-w-7xl gap-8 px-6 pb-16 md:grid-cols-[1.1fr_0.9fr] md:px-10" id="formacion">
-        <div className="glass-panel reveal-up">
-          <p className="section-title">Transformando industrias con IA</p>
-          <p className="section-text">
-            Nuestros proyectos integran software avanzado, analitica y modelos de inteligencia artificial para llevar soluciones desde el laboratorio hasta escenarios reales.
-          </p>
-          <div className="mt-7 grid gap-3">
-            {home.capabilities.map((capability) => (
-              <article className="capability-card" key={capability.id}>
-                <p className="font-semibold text-white">{capability.title}</p>
-                <p className="mt-1 text-sm text-cyan-100/80">{capability.description}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-        <div className="brain-frame reveal-up">
-          <div className="scanline" />
-          <div className="brain-core" />
-          <p className="absolute bottom-6 left-6 right-6 text-sm text-cyan-100/80">
-            Arquitecturas cloud native, data pipelines, modelos embebidos y fabricas de software orientadas a impacto.
-          </p>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 pb-16 md:px-10" id="enfoque">
-        <div className="grid gap-6 md:grid-cols-2">
-          <article className="glass-panel reveal-up">
-            <p className="section-title">Areas de enfoque estrategico</p>
-            <ul className="mt-5 space-y-3 text-cyan-50/90">
-              {home.focusAreas.map((focus) => (
-                <li className="flex gap-3" key={focus.id}>
-                  <span className="mt-2 block h-2 w-2 rounded-full bg-[#f2c500]" />
-                  <span>{focus.text}</span>
-                </li>
-              ))}
-            </ul>
-          </article>
-
-          <article className="glass-panel reveal-up">
-            <p className="section-title">Quienes hacen parte</p>
-            <div className="mt-5 space-y-3">
-              {home.audiences.map((audience) => (
-                <div className="rounded-2xl border border-cyan-300/20 bg-cyan-300/5 p-4" key={audience.id}>
-                  <p className="font-semibold text-white">{audience.title}</p>
-                  <p className="mt-1 text-sm text-cyan-100/80">{audience.description}</p>
-                </div>
-              ))}
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 pb-16 md:px-10" id="semilleros">
-        <p className="section-title reveal-up">Motor operativo El Valle</p>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          {home.spotlight.map((item, index) => (
-            <article className="spotlight-card reveal-up" key={item.id} style={{ animationDelay: `${index * 140}ms` }}>
-              <p className="text-xs uppercase tracking-widest text-[#f2c500]">{item.tag}</p>
-              <p className="mt-2 text-2xl font-bold text-white">{item.title}</p>
-              <p className="mt-3 text-sm text-cyan-100/85">{item.description}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 pb-16 md:px-10">
-        <div className="timeline-grid reveal-up">
-          {home.timeline.map((step) => (
-            <article className="timeline-item" key={step.id}>
-              <p className="text-xs uppercase tracking-wider text-cyan-200">{step.stage}</p>
-              <p className="mt-2 text-sm text-cyan-100/85">{step.detail}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 pb-16 md:px-10" id="noticias">
-        <p className="section-title reveal-up">Noticias y eventos</p>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          {home.news.map((item) => (
-            <article className="news-card reveal-up" key={item.id}>
-              <p className="text-xs uppercase tracking-widest text-cyan-200">{item.dateText}</p>
-              <p className="mt-2 text-xl font-semibold text-white">{item.title}</p>
-              <p className="mt-3 text-sm text-cyan-100/80">{item.excerpt}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 pb-20 md:px-10" id="cta">
-        <div className="cta-banner reveal-up">
-          <p className="text-3xl font-black text-white md:text-5xl">Construyamos el proximo ciclo de innovacion</p>
-          <p className="mt-3 max-w-2xl text-cyan-100/90">
-            Convocatorias, rutas, semilleros y proyectos conectados en una plataforma integrada de alto rendimiento.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link className="cta-primary" to="/#noticias">{home.hero?.primaryCta ?? 'Postulate'}</Link>
-            <Link className="cta-secondary" to="/login">Ingresar</Link>
-          </div>
-        </div>
-      </section>
-        </>
-      ) : null}
+      <div className="spa-content">
+        <Outlet />
       </div>
-
-      {isLoading ? <div className="loader-overlay">Cargando experiencia futurista...</div> : null}
     </main>
   )
+}
+
+function HomePage() {
+  const { home, status, isLoading } = useHomeData()
+  const cards = [
+    { id: 'a', title: 'Valle del software', text: 'Conoce quienes somos y nuestras lineas de software, innovacion y robotica.', path: '/valle-del-software/quienes-somos' },
+    { id: 'b', title: 'Convocatorias', text: 'Fechas abiertas, requisitos de ingreso y cronograma de postulacion.', path: '/convocatorias' },
+    { id: 'c', title: 'Semilleros', text: 'Proyectos, lineas activas y equipos de investigacion aplicada.', path: '/semilleros' },
+    { id: 'd', title: 'Noticias', text: 'Novedades institucionales, logros y agenda de eventos del ecosistema.', path: '/noticias' }
+  ]
+
+  const kpis = home.kpis.length > 0 ? home.kpis : [
+    { id: 'k1', value: '150', suffix: '+', label: 'proyectos' },
+    { id: 'k2', value: '2500', suffix: '+', label: 'estudiantes' },
+    { id: 'k3', value: '45', suffix: '', label: 'semilleros' },
+    { id: 'k4', value: '80', suffix: '', label: 'aliados' }
+  ]
+
+  return (
+    <section className="page-wrap">
+      <article className="hero-shell">
+        <p className="chip">Portal universitario de innovacion</p>
+        <h1 className="hero-title">
+          <span>Construimos el futuro de la</span>
+          <span className="hero-highlight">tecnologia universitaria</span>
+        </h1>
+        <p className="hero-subtitle">{home.hero?.subtitle ?? 'Un ecosistema academico de innovacion que integra formacion en software, investigacion en inteligencia artificial y robotica aplicada.'}</p>
+        <p className="hero-status">{status}</p>
+      </article>
+
+      <div className="summary-grid">
+        {cards.map((item) => (
+          <Link className="summary-card" key={item.id} to={item.path}>
+            <h3>{item.title}</h3>
+            <p>{item.text}</p>
+          </Link>
+        ))}
+      </div>
+
+      <div className="mini-kpi-grid">
+        {kpis.map((item) => (
+          <article className="kpi-card" key={item.id}>
+            <p className="kpi-number">{item.value}{item.suffix ?? ''}</p>
+            <p className="kpi-label">{item.label}</p>
+          </article>
+        ))}
+      </div>
+
+      {isLoading ? <div className="loader-overlay">Cargando experiencia institucional...</div> : null}
+    </section>
+  )
+}
+
+function ModulePage({ title, subtitle, cards }: { title: string; subtitle: string; cards: Array<{ id: string; title: string; text: string; meta: string }> }) {
+  return (
+    <section className="page-wrap">
+      <article className="module-header-card">
+        <h2>{title}</h2>
+        <p>{subtitle}</p>
+      </article>
+      <div className="module-grid-card">
+        {cards.map((card) => (
+          <article className="module-card" key={card.id}>
+            <p className="module-meta">{card.meta}</p>
+            <h3>{card.title}</h3>
+            <p>{card.text}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function QuienesSomosPage() {
+  const { home } = useHomeData()
+  const source = home.audiences.length > 0 ? home.audiences : [
+    { id: 'q1', title: 'Estudiantes', description: 'Participan en rutas de formacion, semilleros y proyectos aplicados.' },
+    { id: 'q2', title: 'Mentores', description: 'Guian cohortes, evaluan evidencias y acompanan resultados.' },
+    { id: 'q3', title: 'Empresas', description: 'Conectan retos reales con talento universitario.' }
+  ]
+  const cards = source.map((item) => ({ id: item.id, title: item.title ?? 'Perfil', text: item.description ?? 'Descripcion institucional.', meta: 'Actor del ecosistema' }))
+  return <ModulePage cards={cards} subtitle="Roles que articulan el ecosistema Valle del Software." title="Quienes somos" />
+}
+
+function ValleSoftwarePage() {
+  const { home } = useHomeData()
+  const source = home.capabilities.length > 0 ? home.capabilities : [
+    { id: 'vs1', title: 'Desarrollo web y movil', description: 'Rutas de aprendizaje orientadas a producto y despliegue cloud.' },
+    { id: 'vs2', title: 'Arquitectura de software', description: 'Diseno de sistemas escalables para escenarios academicos y empresariales.' }
+  ]
+  const cards = source.map((item) => ({ id: item.id, title: item.title ?? 'Linea', text: item.description ?? 'Linea institucional.', meta: 'Valle del software' }))
+  return <ModulePage cards={cards} subtitle="Programas de formacion y desarrollo de software aplicado." title="Valle del software" />
+}
+
+function InnovacionPage() {
+  const cards = [
+    { id: 'in1', title: 'Transferencia de conocimiento', text: 'Conectamos academia y sector productivo para resolver retos reales.', meta: 'Innovacion' },
+    { id: 'in2', title: 'Laboratorios de prototipado', text: 'Validacion temprana de ideas, MVPs y pilotos de impacto.', meta: 'Innovacion' },
+    { id: 'in3', title: 'Emprendimiento', text: 'Acompaniamiento para startups tecnicas con enfoque sostenible.', meta: 'Innovacion' }
+  ]
+  return <ModulePage cards={cards} subtitle="Estrategias para convertir conocimiento en valor aplicado." title="Innovacion" />
+}
+
+function RoboticaPage() {
+  const cards = [
+    { id: 'ro1', title: 'Sistemas autonomos', text: 'Diseno y pruebas de soluciones roboticas para industria y educacion.', meta: 'Robotica' },
+    { id: 'ro2', title: 'Vision por computador', text: 'Modelos de deteccion y analitica visual con IA aplicada.', meta: 'Robotica' },
+    { id: 'ro3', title: 'Investigacion aplicada', text: 'Publicaciones, semilleros y desarrollos de impacto regional.', meta: 'Robotica' }
+  ]
+  return <ModulePage cards={cards} subtitle="Programas y proyectos de robotica e inteligencia artificial." title="Robotica" />
+}
+
+function ConvocatoriasPage() {
+  const cards = [
+    { id: 'c1', title: 'Convocatoria general 2026', text: 'Proceso abierto para rutas de software, innovacion y robotica aplicada.', meta: 'Estado: abierta' },
+    { id: 'c2', title: 'Convocatoria empresas aliadas', text: 'Vinculacion de organizaciones para retos de I+D+i y practicas.', meta: 'Estado: proxima' }
+  ]
+  return <ModulePage cards={cards} subtitle="Fechas, requisitos y estados de postulacion." title="Convocatorias" />
+}
+
+function SemillerosPage() {
+  const { home } = useHomeData()
+  const source = home.focusAreas.length > 0 ? home.focusAreas : [
+    { id: 's1', text: 'Arquitecturas escalables con IA integrada.' },
+    { id: 's2', text: 'Sistemas inteligentes autonomos para industria 4.0.' }
+  ]
+  const cards = source.map((item, index) => ({ id: item.id, title: `Semillero ${index + 1}`, text: item.text ?? 'Linea de investigacion.', meta: 'Semilleros' }))
+  return <ModulePage cards={cards} subtitle="Lineas activas, equipos y avances de investigacion." title="Semilleros" />
+}
+
+function NoticiasPage() {
+  const { home } = useHomeData()
+  const source = home.news.length > 0 ? home.news : [
+    { id: 'n1', title: 'Sin noticias registradas', excerpt: 'Publica noticias en CMS para mostrarlas aqui.', dateText: 'Actualizacion' }
+  ]
+  const cards = source.map((item) => ({ id: item.id, title: item.title ?? 'Noticia', text: item.excerpt ?? 'Contenido institucional.', meta: item.dateText ?? 'Noticia' }))
+  return <ModulePage cards={cards} subtitle="Comunicados, eventos y novedades del ecosistema." title="Noticias" />
 }
 
 function LoginPage() {
@@ -367,7 +352,17 @@ function LoginPage() {
 function App() {
   return (
     <Routes>
-      <Route element={<HomePage />} path="/" />
+      <Route element={<PublicLayout />}>
+        <Route element={<HomePage />} path="/" />
+        <Route element={<Navigate replace to="/valle-del-software/software" />} path="/valle-del-software" />
+        <Route element={<QuienesSomosPage />} path="/valle-del-software/quienes-somos" />
+        <Route element={<ValleSoftwarePage />} path="/valle-del-software/software" />
+        <Route element={<InnovacionPage />} path="/valle-del-software/innovacion" />
+        <Route element={<RoboticaPage />} path="/valle-del-software/robotica" />
+        <Route element={<ConvocatoriasPage />} path="/convocatorias" />
+        <Route element={<SemillerosPage />} path="/semilleros" />
+        <Route element={<NoticiasPage />} path="/noticias" />
+      </Route>
       <Route element={<LoginPage />} path="/login" />
       <Route element={<Navigate replace to="/" />} path="*" />
     </Routes>
