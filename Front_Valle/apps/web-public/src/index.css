@@ -545,3 +545,149 @@ button {
     display: none;
   }
 }
+
+.portal-shell {
+  position: relative;
+  min-height: 100vh;
+}
+
+.portal-content {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  padding-top: 5.7rem;
+}
+
+.portal-header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 75;
+  display: grid;
+  gap: 0.55rem;
+  width: min(224px, calc(100vw - 1.1rem));
+  margin: 0.72rem 0.55rem 0 0;
+}
+
+.header-login,
+.header-apply {
+  width: 100%;
+  border-radius: 0.82rem;
+  padding: 0.62rem 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.header-login {
+  border: 1px solid rgba(151, 183, 239, 0.38);
+  background: linear-gradient(180deg, rgba(24, 41, 74, 0.66), rgba(12, 26, 53, 0.78));
+  color: #eaf3ff;
+}
+
+.header-apply {
+  border: 1px solid rgba(243, 193, 57, 0.75);
+  background: #f1bf33;
+  color: #091733;
+}
+
+.portal-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 80;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 1rem;
+  width: min(86vw, 290px);
+  height: 100vh;
+  border-right: 1px solid var(--line-soft);
+  background: rgba(3, 10, 26, 0.97);
+  padding: 1.2rem 1rem;
+  transform: translateX(-105%);
+  transition: transform 220ms ease;
+}
+
+.sidebar-top-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.sidebar-close {
+  border-radius: 0.6rem;
+  border: 1px solid rgba(163, 192, 246, 0.36);
+  background: transparent;
+  color: #d9e8ff;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.portal-sidebar.open {
+  transform: translateX(0);
+}
+
+.sidebar-nav {
+  margin-top: 0.4rem;
+  display: grid;
+  gap: 0.35rem;
+  align-content: start;
+}
+
+.sidebar-link {
+  border-radius: 0.65rem;
+  padding: 0.64rem 0.72rem;
+  color: #d7e7ff;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.sidebar-link:hover {
+  background: rgba(140, 178, 236, 0.14);
+}
+
+.sidebar-toggle-fab {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 90;
+  border-radius: 0.65rem;
+  border: 1px solid var(--line-strong);
+  background: rgba(4, 14, 36, 0.9);
+  color: #d8e8ff;
+  padding: 0.44rem 0.72rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  border: 0;
+  background: rgba(2, 7, 20, 0.66);
+}
+
+.intro-screen {
+  min-height: 64vh;
+  display: grid;
+  place-items: center;
+}
+
+.intro-only {
+  text-align: center;
+}
+
+@media (min-width: 980px) {
+  .portal-header {
+    width: 210px;
+    margin-right: 1.8rem;
+  }
+
+  .header-login,
+  .header-apply {
+    font-size: 0.92rem;
+  }
+}

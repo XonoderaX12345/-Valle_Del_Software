@@ -62,14 +62,22 @@ function HomePage() {
   const [status, setStatus] = useState('Conectando con plataforma...')
   const [home, setHome] = useState<HomePayload>(emptyPayload)
   const [isLoading, setIsLoading] = useState(true)
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [showIntro, setShowIntro] = useState(true)
 
   const location = useLocation()
 
   const apiUrl = useMemo(() => import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4300', [])
 
   useEffect(() => {
-    if (!location.hash) {
+    const timer = window.setTimeout(() => {
+      setShowIntro(false)
+    }, 4000)
+    return () => window.clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    if (!location.hash || showIntro) {
       return
     }
 
@@ -78,7 +86,7 @@ function HomePage() {
     setTimeout(() => {
       document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }, 20)
-  }, [location.hash])
+  }, [location.hash, showIntro])
 
   useEffect(() => {
     Promise.all([fetch(`${apiUrl}/health`), fetch(`${apiUrl}/api/cms/home`)])
@@ -102,57 +110,63 @@ function HomePage() {
   }, [apiUrl])
 
   return (
-    <main className="relative overflow-hidden">
+    <main className="portal-shell">
       <div className="ambient-grid" />
 
-      <header className="institutional-header">
-        <nav className="nav-shell">
-          <Link className="brand-mark" to="/">
+      {!isSidebarOpen ? <button className="sidebar-toggle-fab" onClick={() => setIsSidebarOpen(true)} type="button">Menu</button> : null}
+
+      <header className="portal-header">
+        <Link className="header-login" to="/login">Ingresar</Link>
+        <Link className="header-apply" to="/#cta">Aplicar</Link>
+      </header>
+
+      <aside className={`portal-sidebar ${isSidebarOpen ? 'open' : ''}`}>
+        <div className="sidebar-top-row">
+          <Link className="brand-mark" onClick={() => setIsSidebarOpen(false)} to="/">
             <span className="brand-overline">Unidad academica</span>
             <span className="brand-title">VALLE DEL SOFTWARE</span>
           </Link>
+          <button className="sidebar-close" onClick={() => setIsSidebarOpen(false)} type="button">Cerrar</button>
+        </div>
 
-          <div className="desktop-nav">
-            <Link className="nav-link" to="/#formacion">Formacion</Link>
-            <Link className="nav-link" to="/#semilleros">Semilleros</Link>
-            <Link className="nav-link" to="/#noticias">Noticias</Link>
-            <Link className="nav-link" to="/#enfoque">Enfoque</Link>
-          </div>
-
-          <div className="nav-actions">
-            <Link className="login-button" to="/login">Ingresar</Link>
-            <button className="menu-toggle" onClick={() => setIsMenuOpen((prev) => !prev)} type="button">
-              Menu
-            </button>
-          </div>
+        <nav className="sidebar-nav">
+          <Link className="sidebar-link" onClick={() => setIsSidebarOpen(false)} to="/#inicio">Inicio</Link>
+          <Link className="sidebar-link" onClick={() => setIsSidebarOpen(false)} to="/#enfoque">El Valle</Link>
+          <Link className="sidebar-link" onClick={() => setIsSidebarOpen(false)} to="/#cta">Convocatorias</Link>
+          <Link className="sidebar-link" onClick={() => setIsSidebarOpen(false)} to="/#formacion">Formacion</Link>
+          <Link className="sidebar-link" onClick={() => setIsSidebarOpen(false)} to="/#semilleros">Semilleros</Link>
+          <Link className="sidebar-link" onClick={() => setIsSidebarOpen(false)} to="/#noticias">Noticias</Link>
         </nav>
 
-        {isMenuOpen ? (
-          <div className="mobile-menu">
-            <Link className="mobile-link" onClick={() => setIsMenuOpen(false)} to="/#formacion">Formacion</Link>
-            <Link className="mobile-link" onClick={() => setIsMenuOpen(false)} to="/#semilleros">Semilleros</Link>
-            <Link className="mobile-link" onClick={() => setIsMenuOpen(false)} to="/#noticias">Noticias</Link>
-            <Link className="mobile-link" onClick={() => setIsMenuOpen(false)} to="/#enfoque">Enfoque</Link>
-            <Link className="mobile-login" onClick={() => setIsMenuOpen(false)} to="/login">Ingresar</Link>
-          </div>
-        ) : null}
-      </header>
+      </aside>
 
-      <section className="mx-auto max-w-7xl px-6 pb-12 pt-12 md:px-10 md:pt-16">
-        <div className="hero-shell reveal-up">
+      {isSidebarOpen ? <button className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)} type="button" /> : null}
+
+      <div className="portal-content">
+
+      <section className={`mx-auto max-w-7xl px-6 pb-12 pt-12 md:px-10 md:pt-16 ${showIntro ? 'intro-screen' : ''}`} id="inicio">
+        <div className={`hero-shell reveal-up ${showIntro ? 'intro-only' : ''}`}>
           <p className="chip">Portal universitario de innovacion</p>
           <h1 className="hero-title">
-            <span>Valle del Software</span>
-            <span className="hero-highlight">{home.hero?.highlighted ?? 'Inteligencia Artificial'}</span>
+            <span>Construimos el futuro de la</span>
+            <span className="hero-highlight">tecnologia universitaria</span>
           </h1>
-          <p className="hero-subtitle">{home.hero?.subtitle ?? 'Cargando contenido institucional...'}</p>
-          <div className="hero-actions">
-            <Link className="cta-primary" to="/#noticias">{home.hero?.primaryCta ?? 'Ver convocatorias'}</Link>
-            <Link className="cta-secondary" to="/login">Ingresar a plataforma</Link>
-          </div>
-          <p className="hero-status">{status}</p>
+
+          {!showIntro ? (
+            <>
+              <p className="hero-subtitle">{home.hero?.subtitle ?? 'Un ecosistema academico de innovacion que integra formacion en software, investigacion en inteligencia artificial y robotica aplicada para impulsar el talento tecnologico del futuro.'}</p>
+              <div className="hero-actions">
+                <Link className="apply-button" to="/#cta">Aplicar al Valle</Link>
+                <Link className="cta-secondary" to="/#semilleros">Ver proyectos</Link>
+              </div>
+              <p className="hero-status">{status}</p>
+            </>
+          ) : null}
         </div>
       </section>
+
+      {!showIntro ? (
+        <>
 
       <section className="mx-auto max-w-7xl px-6 pb-14 md:px-10">
         <div className="grid gap-4 md:grid-cols-4">
@@ -266,6 +280,9 @@ function HomePage() {
           </div>
         </div>
       </section>
+        </>
+      ) : null}
+      </div>
 
       {isLoading ? <div className="loader-overlay">Cargando experiencia futurista...</div> : null}
     </main>
